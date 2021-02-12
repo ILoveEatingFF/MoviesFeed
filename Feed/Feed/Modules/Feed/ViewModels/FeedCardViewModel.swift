@@ -5,5 +5,9 @@
 import Foundation
 
 struct FeedCardViewModel {
+    let title: String
     let urlToImage: String
+    let releaseDate: String
+    let voteAverage: String
+    let overview: String
 }
