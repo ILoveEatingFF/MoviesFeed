@@ -16,9 +16,14 @@ final class FeedPresenter {
 	private let interactor: FeedInteractorInput
 
     private var movies: [Movie] = []
-    private let imagePath = "https://image.tmdb.org/t/p/"
 
     private var isNextPageLoading = false
+
+    private let dateFormatter: DateFormatter = {
+        let result = DateFormatter()
+        result.dateFormat = "yyyy-MM-dd"
+        return result
+    }()
 
     
     init(router: FeedRouterInput, interactor: FeedInteractorInput) {
@@ -82,13 +87,14 @@ extension FeedPresenter: FeedInteractorOutput {
 
 private extension FeedPresenter {
     func makeViewModels(with movies: [Movie]) -> [FeedCardViewModel] {
-        movies.map{ movie in
+        movies.map { movie in
             let posterPath = movie.posterPath ?? ""
-            let imageUrl = imagePath + imageType.small.rawValue + posterPath
+            let imageUrl = ImagePath.smallImage(posterPath)
             return FeedCardViewModel(
                     title: movie.title ?? "",
                     urlToImage: imageUrl,
-                    releaseDate: movie.releaseDate ?? "",
+//                    releaseDate: movie.releaseDate ?? "",
+                    releaseDate: dateFormatter.string(from: movie.releaseDate ?? Date()),
                     voteAverage: String(movie.voteAverage ?? 0),
                     overview: movie.overview ?? "")
         }

@@ -13,7 +13,11 @@ final class FeedInteractor {
 
 	private var page = Constants.initialPage
 
+	private let dataManager = DataManager()
+
 	private let apiClient = ApiClient()
+
+	private var networkIsWorking = true
 }
 
 extension FeedInteractor: FeedInteractorInput {
@@ -27,16 +31,43 @@ extension FeedInteractor: FeedInteractorInput {
 
 	private func load() {
 		let params = MoviesParams(page: page)
-		apiClient.requestMovies(params: params) { [weak self] (result: Result<MoviesResponse, Error>) in
-			guard let self = self else { return }
-			switch result{
+		apiClient.requestMovies(params: params) { [unowned self] (result: Result<MoviesResponse, Error>) in
+			switch result {
 			case .success(let response):
-				self.output?.didLoad(response.results, type: self.page == Constants.initialPage ? .reload: .nextPage)
-				self.page = response.page + 1
+				networkIsWorking = true
+				dataManager.syncMovies(with: response.results)
+				output?.didLoad(response.results, type: page == Constants.initialPage ? .reload: .nextPage)
+				page = response.page + 1
 			case .failure(let error):
-				print(error)
+//				guard networkIsWorking else { break }
+				networkIsWorking = false
+				dataManager.requestMoviesCore { result in
+					switch result {
+					case .success(let moviesCore):
+						let movies = makeMovies(from: moviesCore)
+						for data in moviesCore {
+							print(data.value(forKey: "title"))
+						}
+						output?.didLoad(movies, type: .reload)
+					case .failure(let error):
+						print(error)
+					}
+				}
 			}
 		}
 	}
 
+	private func makeMovies(from moviesCore: [MovieCore]) -> [Movie] {
+
+		moviesCore.map { movieCore in
+			Movie(
+					title: movieCore.value(forKey: "title") as? String,
+					posterPath: movieCore.value(forKey: "posterPath") as? String,
+					releaseDate: movieCore.value(forKey: "releaseDate") as? Date,
+					overview: movieCore.value(forKey: "overview") as? String,
+					voteAverage: movieCore.value(forKey: "voteAverage") as? Double,
+					voteCount: movieCore.value(forKey: "voteCount") as? Int
+			)
+		}
+	}
 }
