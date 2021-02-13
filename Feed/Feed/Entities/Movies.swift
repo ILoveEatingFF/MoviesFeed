@@ -10,6 +10,7 @@ struct MoviesResponse: Decodable {
 }
 
 struct Movie: Decodable {
+    let id: Int?
     let title: String?
     let posterPath: String?
     let releaseDate: Date?

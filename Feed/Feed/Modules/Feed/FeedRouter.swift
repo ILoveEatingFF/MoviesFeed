@@ -18,7 +18,7 @@ final class FeedRouter {
 
 extension FeedRouter: FeedRouterInput {
     func showMovie(with viewModel: FeedCardViewModel) {
-        let context = MovieInfoContext(moduleOutput: nil, viewModel: viewModel)
+        let context = MovieInfoContext(moduleOutput: nil, viewModel: viewModel, id: viewModel.id)
         let container = MovieInfoContainer.assemble(with: context)
         navigationController?.pushViewController(container.viewController, animated: true)
     }

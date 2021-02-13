@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreData
 
 final class FeedPresenter {
 	weak var view: FeedViewInput?
@@ -18,6 +19,7 @@ final class FeedPresenter {
     private var movies: [Movie] = []
 
     private var isNextPageLoading = false
+    private var isReloading = false
 
     private let dateFormatter: DateFormatter = {
         let result = DateFormatter()
@@ -38,11 +40,13 @@ extension FeedPresenter: FeedModuleInput {
 extension FeedPresenter: FeedViewOutput {
 
     func viewDidLoad() {
+        isReloading = true
         interactor.reloadData()
     }
 
     func willDisplay(at index: Int) {
-        guard !isNextPageLoading,
+        guard !isReloading,
+              !isNextPageLoading,
               movies.count - index < Constants.minMoviesDiffToLoadNext
                 else { return }
         isNextPageLoading = true
@@ -70,9 +74,15 @@ extension FeedPresenter: FeedViewOutput {
 }
 
 extension FeedPresenter: FeedInteractorOutput {
+    func didLoadCore(_ managedObject: [NSManagedObject]) {
+        let viewModelsCore = makeViewModelsCore(with: managedObject)
+        view?.updateView(with: viewModelsCore)
+    }
+
     func didLoad(_ movies: [Movie], type: LoadingType) {
         switch type {
         case .reload:
+            isReloading = false
             self.movies = movies
         case .nextPage:
             isNextPageLoading = false
@@ -91,12 +101,28 @@ private extension FeedPresenter {
             let posterPath = movie.posterPath ?? ""
             let imageUrl = ImagePath.smallImage(posterPath)
             return FeedCardViewModel(
+                    id: movie.id ?? 0,
                     title: movie.title ?? "",
+                    image: nil,
                     urlToImage: imageUrl,
-//                    releaseDate: movie.releaseDate ?? "",
                     releaseDate: dateFormatter.string(from: movie.releaseDate ?? Date()),
                     voteAverage: String(movie.voteAverage ?? 0),
                     overview: movie.overview ?? "")
+        }
+    }
+
+    func makeViewModelsCore(with managedObj: [NSManagedObject]) -> [FeedCardViewModel] {
+        managedObj.map { object in
+//            guard let image = object.value(forKey: "image") as? Data
+            FeedCardViewModel(
+                    id: object.value(forKey: "movieId") as? Int ?? 0,
+                    title: object.value(forKey: "title") as? String ?? "",
+                    image: object.value(forKey: "image") as? Data,
+                    urlToImage: "",
+                    releaseDate: dateFormatter.string(from: object.value(forKey: "releaseDate") as? Date ?? Date()),
+                    voteAverage: String(object.value(forKey: "voteAverage") as? Double ?? 0 ),
+                    overview: object.value(forKey: "overview") as? String ?? ""
+            )
         }
     }
 }

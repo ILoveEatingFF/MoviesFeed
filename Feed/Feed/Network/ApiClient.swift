@@ -43,15 +43,20 @@ class ApiClient {
             completion(.failure(InternalError.wrongURL))
             return
         }
-        let urlRequest = URLRequest(url: url)
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.cachePolicy = .reloadIgnoringCacheData
+
         let dataTask = URLSession.shared.dataTask(with: urlRequest) {
             (data: Data?, response: URLResponse?, error: Error?) -> () in
+
             if let error = error {
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
                 return
             }
+
             else if let data = data {
                 DispatchQueue.main.async {
                     do {

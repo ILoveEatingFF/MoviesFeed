@@ -2,7 +2,7 @@
 //  MovieCore+CoreDataProperties.swift
 //  Feed
 //
-//  Created by Иван Лизогуб on 12.02.2021.
+//  Created by Иван Лизогуб on 13.02.2021.
 //
 //
 
@@ -16,12 +16,13 @@ extension MovieCore {
         return NSFetchRequest<MovieCore>(entityName: "MovieCore")
     }
 
-    @NSManaged public var downloadDate: Date
-    @NSManaged public var image: Data
-    @NSManaged public var overview: String
-    @NSManaged public var releaseDate: Date
-    @NSManaged public var title: String
+    @NSManaged public var downloadDate: Date?
+    @NSManaged public var image: Data?
+    @NSManaged public var overview: String?
+    @NSManaged public var releaseDate: Date?
+    @NSManaged public var title: String?
     @NSManaged public var voteAverage: Double
+    @NSManaged public var movieId: NSNumber
 
 }
 

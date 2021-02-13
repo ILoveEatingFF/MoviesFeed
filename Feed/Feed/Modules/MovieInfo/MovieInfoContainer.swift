@@ -15,7 +15,7 @@ final class MovieInfoContainer {
 
 	static func assemble(with context: MovieInfoContext) -> MovieInfoContainer {
         let router = MovieInfoRouter()
-        let interactor = MovieInfoInteractor()
+        let interactor = MovieInfoInteractor(movieId: context.id)
         let presenter = MovieInfoPresenter(router: router, interactor: interactor)
 		let viewController = MovieInfoViewController(output: presenter, viewModel: context.viewModel)
 
@@ -37,4 +37,5 @@ final class MovieInfoContainer {
 struct MovieInfoContext {
 	weak var moduleOutput: MovieInfoModuleOutput?
 	var viewModel: FeedCardViewModel
+	var id: Int
 }

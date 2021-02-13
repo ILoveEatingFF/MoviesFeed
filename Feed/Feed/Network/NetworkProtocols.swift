@@ -11,4 +11,5 @@ struct MoviesParams {
 enum InternalError: Error {
     case wrongURL
     case InternalServerError
+    case failedToUpdateCoreData
 }

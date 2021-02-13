@@ -106,7 +106,11 @@ class FeedViewCell: UICollectionViewCell {
 
     func update(with viewModel: FeedCardViewModel, gradeColor: Color) {
         title.text = viewModel.title
-        imageView.setImage(with: URL(string: viewModel.urlToImage))
+        if let imageData = viewModel.image {
+            imageView.image = UIImage(data: imageData)
+        } else {
+            imageView.setImage(with: URL(string: viewModel.urlToImage))
+        }
         voteAverage.text = viewModel.voteAverage
         releaseDate.text = viewModel.releaseDate
 

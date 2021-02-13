@@ -6,31 +6,18 @@ import Foundation
 import CoreData
 
 final class DataManager {
-    private lazy var persistentContainer: NSPersistentContainer = {
-        /*
-         The persistent container for the application. This implementation
-         creates and returns a container, having loaded the store for the
-         application to it. This property is optional since there are legitimate
-         error conditions that could cause the creation of the store to fail.
-        */
-        let container = NSPersistentContainer(name: "Feed")
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
+    static let shared = DataManager()
 
-        container.viewContext.automaticallyMergesChangesFromParent = true
-
-        return container
-    }()
+    lazy var persistentContainer: NSPersistentContainer = PersistentContainer.shared.persistentContainer
 
     private lazy var taskContext: NSManagedObjectContext = {
         let context = persistentContainer.newBackgroundContext()
         context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         return context
     }()
+}
 
+extension DataManager: FeedData {
     func requestMoviesCore(completion: @escaping (Result<[MovieCore], Error>) -> Void) {
         let viewContext = persistentContainer.viewContext
         let fetchRequest = MovieCore.createFetchRequest()
@@ -47,15 +34,31 @@ final class DataManager {
 
     func syncMovies(with movies: [Movie]) {
         taskContext.perform { [unowned self] in
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MovieCore")
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            let matchingMovieRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MovieCore")
+            let moviesIds = movies.map {$0.id}.compactMap {$0}
+            matchingMovieRequest.predicate = NSPredicate(format: "movieId in %@", argumentArray: [moviesIds])
 
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: matchingMovieRequest)
+            deleteRequest.resultType = .resultTypeObjectIDs
+
+
+//            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MovieCore")
+//            let delete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
             do {
-                try taskContext.execute(deleteRequest)
+//                let deleteRequest = try taskContext.execute(delete)
+
+                let deleteResult = try taskContext.execute(deleteRequest) as? NSBatchDeleteResult
+
+                if let deletedIds = deleteResult?.result as? [NSManagedObject] {
+                    NSManagedObjectContext.mergeChanges(fromRemoteContextSave: [NSDeletedObjectsKey: deletedIds],
+                            into: [persistentContainer.viewContext])
+                }
             } catch {
                 print("Error: \(error) syncMovies deleteResult")
                 return
             }
+
+
 
             for movie in movies {
                 guard let movieCore = NSEntityDescription.insertNewObject(
@@ -65,7 +68,12 @@ final class DataManager {
                     return
                 }
 
-                movieCore.update(with: movie)
+                do {
+                    try movieCore.update(with: movie)
+                } catch {
+                    taskContext.delete(movieCore)
+                    print(error.localizedDescription)
+                }
             }
 
             if taskContext.hasChanges {
@@ -81,6 +89,24 @@ final class DataManager {
             }
         }
     }
+}
+
+extension DataManager: MovieInfoData {
+    func requestMovie(with movieId: Int, completion: @escaping (Result<MovieCore, Error>) -> Void) {
+        let viewContext = persistentContainer.viewContext
+        let fetchRequest = MovieCore.createFetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "movieId = %@", NSNumber(value: movieId))
 
 
+        do {
+            let moviesCore = try viewContext.fetch(fetchRequest)
+            assert(moviesCore.count < 2)
+
+            if let movieCore = moviesCore.first as? MovieCore {
+                completion(.success(movieCore))
+            }
+        } catch {
+            print(error)
+        }
+    }
 }

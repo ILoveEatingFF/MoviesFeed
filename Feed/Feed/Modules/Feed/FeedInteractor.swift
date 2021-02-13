@@ -13,11 +13,13 @@ final class FeedInteractor {
 
 	private var page = Constants.initialPage
 
-	private let dataManager = DataManager()
+	private let dataManager: FeedData = DataManager.shared
 
 	private let apiClient = ApiClient()
 
 	private var networkIsWorking = true
+
+	private var numberOfElementsInCore = 0
 }
 
 extension FeedInteractor: FeedInteractorInput {
@@ -35,20 +37,20 @@ extension FeedInteractor: FeedInteractorInput {
 			switch result {
 			case .success(let response):
 				networkIsWorking = true
-				dataManager.syncMovies(with: response.results)
+				if numberOfElementsInCore < Constants.maxMoviesSaved {
+					dataManager.syncMovies(with: response.results)
+				}
 				output?.didLoad(response.results, type: page == Constants.initialPage ? .reload: .nextPage)
 				page = response.page + 1
+				numberOfElementsInCore += response.results.count
 			case .failure(let error):
-//				guard networkIsWorking else { break }
+				print(error)
+				guard networkIsWorking else { return }
 				networkIsWorking = false
 				dataManager.requestMoviesCore { result in
 					switch result {
 					case .success(let moviesCore):
-						let movies = makeMovies(from: moviesCore)
-						for data in moviesCore {
-							print(data.value(forKey: "title"))
-						}
-						output?.didLoad(movies, type: .reload)
+						output?.didLoadCore(moviesCore)
 					case .failure(let error):
 						print(error)
 					}
@@ -57,17 +59,4 @@ extension FeedInteractor: FeedInteractorInput {
 		}
 	}
 
-	private func makeMovies(from moviesCore: [MovieCore]) -> [Movie] {
-
-		moviesCore.map { movieCore in
-			Movie(
-					title: movieCore.value(forKey: "title") as? String,
-					posterPath: movieCore.value(forKey: "posterPath") as? String,
-					releaseDate: movieCore.value(forKey: "releaseDate") as? Date,
-					overview: movieCore.value(forKey: "overview") as? String,
-					voteAverage: movieCore.value(forKey: "voteAverage") as? Double,
-					voteCount: movieCore.value(forKey: "voteCount") as? Int
-			)
-		}
-	}
 }

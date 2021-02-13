@@ -36,6 +36,7 @@ final class MovieInfoViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
+        output.viewDidLoad()
 	}
 
     private func setup() {
@@ -63,4 +64,8 @@ final class MovieInfoViewController: UIViewController {
 }
 
 extension MovieInfoViewController: MovieInfoViewInput {
+    func updateView(with viewModel: MovieInfoViewModel) {
+        imageView.image = UIImage(data: viewModel.image)
+    }
+
 }
