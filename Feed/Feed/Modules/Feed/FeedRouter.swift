@@ -18,7 +18,11 @@ final class FeedRouter {
 
 extension FeedRouter: FeedRouterInput {
     func showMovie(with viewModel: FeedCardViewModel) {
-        let context = MovieInfoContext(moduleOutput: nil, viewModel: viewModel)
+        /* Передаю в следующий модуль viewModel, так как не понятно, как отоброжать дату загрузки,
+         если сохраняются не все картинки(дату получения с сервера?), если этот функционал не нужен, то передайте nil
+          во viewModel.
+         */
+        let context = MovieInfoContext(moduleOutput: nil, viewModel: viewModel, id: viewModel.id)
         let container = MovieInfoContainer.assemble(with: context)
         navigationController?.pushViewController(container.viewController, animated: true)
     }

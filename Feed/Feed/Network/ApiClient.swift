@@ -22,10 +22,19 @@ class ApiClient {
         return result
     }()
 
-    private let decoder: JSONDecoder = {
+    private lazy var decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .formatted(formatter)
         return decoder
+    }()
+
+    private let formatter: DateFormatter = {
+        let result = DateFormatter()
+        result.calendar = Calendar(identifier: .iso8601)
+        result.dateFormat = "yyyy-MM-dd"
+        result.timeZone = TimeZone(abbreviation: "UTC")
+        return result
     }()
 
 
@@ -34,14 +43,20 @@ class ApiClient {
             completion(.failure(InternalError.wrongURL))
             return
         }
-        let urlRequest = URLRequest(url: url)
-        let dataTask = URLSession.shared.dataTask(with: urlRequest) { (data: Data?, response: URLResponse?, error: Error?) -> () in
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.cachePolicy = .reloadIgnoringCacheData
+
+        let dataTask = URLSession.shared.dataTask(with: urlRequest) {
+            (data: Data?, response: URLResponse?, error: Error?) -> () in
+
             if let error = error {
                 DispatchQueue.main.async {
                     completion(.failure(error))
                 }
                 return
             }
+
             else if let data = data {
                 DispatchQueue.main.async {
                     do {
@@ -71,9 +86,4 @@ class ApiClient {
         result.queryItems?.append(contentsOf: [URLQueryItem(name: "page", value: "\(params.page)")])
         return result.url
     }
-}
-
-private enum InternalError: Error {
-    case wrongURL
-    case InternalServerError
 }

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreData
 
 protocol FeedModuleInput {
 	var moduleOutput: FeedModuleOutput? { get }
@@ -33,6 +34,7 @@ protocol FeedInteractorInput: class {
 
 protocol FeedInteractorOutput: class {
 	func didLoad(_ movies: [Movie], type: LoadingType)
+	func didLoadCore(_ managedObject: [NSManagedObject])
 }
 
 protocol FeedRouterInput: class {

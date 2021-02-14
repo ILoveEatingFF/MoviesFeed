@@ -13,7 +13,13 @@ final class FeedInteractor {
 
 	private var page = Constants.initialPage
 
+	private let dataManager: FeedData = DataManager.shared
+
 	private let apiClient = ApiClient()
+
+	private var networkIsWorking = true
+
+	private var numberOfElementsInCore = 0
 }
 
 extension FeedInteractor: FeedInteractorInput {
@@ -27,14 +33,29 @@ extension FeedInteractor: FeedInteractorInput {
 
 	private func load() {
 		let params = MoviesParams(page: page)
-		apiClient.requestMovies(params: params) { [weak self] (result: Result<MoviesResponse, Error>) in
-			guard let self = self else { return }
-			switch result{
+		apiClient.requestMovies(params: params) { [unowned self] (result: Result<MoviesResponse, Error>) in
+			switch result {
 			case .success(let response):
-				self.output?.didLoad(response.results, type: self.page == Constants.initialPage ? .reload: .nextPage)
-				self.page = response.page + 1
+				networkIsWorking = true
+				//Если вы хотите сохранять все данные, то можно сделать Constants.maxMoviesSaved = Int.max
+				if numberOfElementsInCore < Constants.maxMoviesSaved {
+					dataManager.syncMovies(with: response.results)
+				}
+				output?.didLoad(response.results, type: page == Constants.initialPage ? .reload: .nextPage)
+				page = response.page + 1
+				numberOfElementsInCore += response.results.count
 			case .failure(let error):
 				print(error)
+				guard networkIsWorking else { return }
+				networkIsWorking = false
+				dataManager.requestMoviesCore { result in
+					switch result {
+					case .success(let moviesCore):
+						output?.didLoadCore(moviesCore)
+					case .failure(let error):
+						print(error)
+					}
+				}
 			}
 		}
 	}

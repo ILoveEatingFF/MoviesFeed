@@ -8,3 +8,8 @@ struct MoviesParams {
     let page: Int
 }
 
+enum InternalError: Error {
+    case wrongURL
+    case InternalServerError
+    case failedToUpdateCoreData
+}
