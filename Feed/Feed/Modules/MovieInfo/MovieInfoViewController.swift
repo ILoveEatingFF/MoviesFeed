@@ -14,6 +14,7 @@ final class MovieInfoViewController: UIViewController {
     private let viewModel: FeedCardViewModel?
 
     private let imageView = UIImageView()
+    private let placeholder: UIImage? = UIImage(named: "default_poster")
 
     private let downloadDate = UILabel()
 
@@ -84,7 +85,7 @@ final class MovieInfoViewController: UIViewController {
         view.addSubview(imageView)
 
         if let viewModel = viewModel {
-            imageView.setImage(with: URL(string: viewModel.urlToImage))
+            imageView.setImage(with: URL(string: viewModel.urlToImage), placeholder: placeholder)
         }
     }
 

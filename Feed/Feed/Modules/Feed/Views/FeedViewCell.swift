@@ -11,6 +11,7 @@ protocol ReusableView {
 class FeedViewCell: UICollectionViewCell {
 
     private let imageView = UIImageView()
+    private let placeholder: UIImage? = UIImage(named: "default_poster")
 
     private let title = UILabel()
 
@@ -109,7 +110,7 @@ class FeedViewCell: UICollectionViewCell {
         if let imageData = viewModel.image {
             imageView.image = UIImage(data: imageData)
         } else {
-            imageView.setImage(with: URL(string: viewModel.urlToImage))
+            imageView.setImage(with: URL(string: viewModel.urlToImage), placeholder: placeholder)
         }
         voteAverage.text = viewModel.voteAverage
         releaseDate.text = viewModel.releaseDate
