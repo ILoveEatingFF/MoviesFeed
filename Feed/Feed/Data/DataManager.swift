@@ -102,7 +102,7 @@ extension DataManager: MovieInfoData {
             let moviesCore = try viewContext.fetch(fetchRequest)
             assert(moviesCore.count < 2)
 
-            if let movieCore = moviesCore.first as? MovieCore {
+            if let movieCore: MovieCore = moviesCore.first {
                 completion(.success(movieCore))
             }
         } catch {

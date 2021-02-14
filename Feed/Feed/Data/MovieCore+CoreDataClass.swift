@@ -11,7 +11,6 @@ import CoreData
 
 @objc(MovieCore)
 public class MovieCore: NSManagedObject {
-    //TODO: fix bug update when user got info from db and cant get images
     func update(with movie: Movie) throws {
         guard let posterPath = movie.posterPath,
               let url = URL(string: ImagePath.smallImage(posterPath)),

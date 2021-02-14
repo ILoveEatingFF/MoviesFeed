@@ -102,26 +102,26 @@ private extension FeedPresenter {
             let imageUrl = ImagePath.smallImage(posterPath)
             return FeedCardViewModel(
                     id: movie.id ?? 0,
+                    downloadDate: Date(),
                     title: movie.title ?? "",
                     image: nil,
                     urlToImage: imageUrl,
                     releaseDate: dateFormatter.string(from: movie.releaseDate ?? Date()),
-                    voteAverage: String(movie.voteAverage ?? 0),
-                    overview: movie.overview ?? "")
+                    voteAverage: String(movie.voteAverage ?? 0)
+            )
         }
     }
 
     func makeViewModelsCore(with managedObj: [NSManagedObject]) -> [FeedCardViewModel] {
         managedObj.map { object in
-//            guard let image = object.value(forKey: "image") as? Data
             FeedCardViewModel(
                     id: object.value(forKey: "movieId") as? Int ?? 0,
+                    downloadDate: object.value(forKey: "downloadDate") as? Date ?? Date(),
                     title: object.value(forKey: "title") as? String ?? "",
                     image: object.value(forKey: "image") as? Data,
                     urlToImage: "",
                     releaseDate: dateFormatter.string(from: object.value(forKey: "releaseDate") as? Date ?? Date()),
-                    voteAverage: String(object.value(forKey: "voteAverage") as? Double ?? 0 ),
-                    overview: object.value(forKey: "overview") as? String ?? ""
+                    voteAverage: String(object.value(forKey: "voteAverage") as? Double ?? 0 )
             )
         }
     }

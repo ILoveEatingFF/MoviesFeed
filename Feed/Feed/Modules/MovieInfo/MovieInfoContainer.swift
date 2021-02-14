@@ -36,6 +36,6 @@ final class MovieInfoContainer {
 
 struct MovieInfoContext {
 	weak var moduleOutput: MovieInfoModuleOutput?
-	var viewModel: FeedCardViewModel
+	var viewModel: FeedCardViewModel?
 	var id: Int
 }

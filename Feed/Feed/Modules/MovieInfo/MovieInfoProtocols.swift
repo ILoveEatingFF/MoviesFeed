@@ -17,7 +17,7 @@ protocol MovieInfoModuleOutput: class {
 }
 
 protocol MovieInfoViewInput: class {
-	func updateView(with viewModel: MovieInfoViewModel)
+	func updateView(with viewModelCore: MovieInfoViewModel)
 }
 
 protocol MovieInfoViewOutput: class {

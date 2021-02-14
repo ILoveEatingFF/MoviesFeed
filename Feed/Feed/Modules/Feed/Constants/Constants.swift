@@ -26,7 +26,7 @@ enum ImageType: String {
 
 enum Constants {
     static let initialPage = 1
-    static let maxMoviesSaved = 60
+    static let maxMoviesSaved = 100
     static let minMoviesDiffToLoadNext = 5
 }
 

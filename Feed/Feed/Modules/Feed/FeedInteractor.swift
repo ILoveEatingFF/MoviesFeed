@@ -37,6 +37,7 @@ extension FeedInteractor: FeedInteractorInput {
 			switch result {
 			case .success(let response):
 				networkIsWorking = true
+				//Если вы хотите сохранять все данные, то можно сделать Constants.maxMoviesSaved = Int.max
 				if numberOfElementsInCore < Constants.maxMoviesSaved {
 					dataManager.syncMovies(with: response.results)
 				}
