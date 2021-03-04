@@ -5,7 +5,7 @@
 import Foundation
 
 class ApiClient {
-    private let apiKey = "d6e7caff0c4ffdc48aa4f36d4ae8b3cc"
+    private let apiKey = "" //paste your apiKey here
     
     private let includeAdult = false
     private let includeVideo = false
